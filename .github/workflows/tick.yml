@@ -1,0 +1,20 @@
+# Pings the @ela.systems publisher every ~5 minutes so scheduled reels/stories go out on time.
+# The URL and the shared secret live in this repo's encrypted Actions secrets (TICK_URL, CRON_SECRET).
+name: tick
+on:
+  schedule:
+    - cron: '2-59/5 * * * *'   # off the top of the hour, when GitHub's scheduler is busiest
+  workflow_dispatch:
+concurrency:
+  group: tick
+  cancel-in-progress: false
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: tick
+        run: |
+          curl -fsS -X POST --max-time 90 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.TICK_URL }}" | head -c 2000
